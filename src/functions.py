@@ -3,7 +3,7 @@
 import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TrainerCallback
-from src.config import get_hf_token, get_device
+from src.config import Config
 
 # ------------------------------------------------------
 # ✅ step 단위 loss 로그를 저장하는 콜백 클래스 (클래스명 유지)
@@ -25,8 +25,8 @@ class LossLoggerCallback(TrainerCallback):
 # ------------------------------------------------------
 class ModelLoader:
     def __init__(self):
-        self.HF_TOKEN = get_hf_token()
-        self.DEVICE = get_device()
+        self.HF_TOKEN = Config.get_hf_token()
+        self.DEVICE = Config.get_device()
         self.model_id = "naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B"
         self.tokenizer = None
         self.model = None

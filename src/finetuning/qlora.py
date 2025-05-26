@@ -5,7 +5,7 @@ from datasets import load_dataset, Features, Value
 import torch
 import os
 import shutil
-from src.config import get_hf_token
+from src.config import Config
 from src.functions import LossLoggerCallback  # tools.py에서 콜백 클래스 임포트
 
 class QLoraTrainer:
@@ -22,7 +22,7 @@ class QLoraTrainer:
         self.api = HfApi()
 
     def initialize_environment(self):
-        login(token=get_hf_token())
+        login(token=Config.get_hf_token())
         print("✅ 현재 사용자:", self.api.whoami()["name"])
 
     def load_and_prepare_dataset(self):
@@ -117,19 +117,3 @@ class QLoraTrainer:
         self.api.create_repo(repo_id=self.repo_id, repo_type="model", exist_ok=True, private=False)
         self.api.upload_folder(folder_path=self.output_dir, repo_id=self.repo_id, repo_type="model")
         print(f"✅ 모델 업로드 완료: https://huggingface.co/{self.repo_id}")
-
-# Main execution
-model_id = "naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B"
-file_path = "./dataset/posts-0515.jsonl"
-log_path = "./log/Meow_HyperCLOVAX-1.5B-QLoRA-nf4_log.txt"
-output_dir = "./finetuned-ktb"
-repo_id = "haebo/Meow-HyperCLOVAX-1.5B-QLoRA-nf4"
-
-qlora_trainer = QLoraTrainer(model_id, file_path, log_path, output_dir, repo_id)
-qlora_trainer.initialize_environment()
-qlora_trainer.load_and_prepare_dataset()
-qlora_trainer.setup_model_and_tokenizer()
-qlora_trainer.tokenize_dataset()
-trainer = qlora_trainer.setup_trainer()
-qlora_trainer.train_model(trainer)
-qlora_trainer.save_and_upload_model(trainer)

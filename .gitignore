@@ -1,3 +1,4 @@
 .env
 .venv
 ./finetuned-ktb
+__pycache__/
