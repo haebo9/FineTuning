@@ -120,9 +120,16 @@ class LoraTrainer:
         minutes, seconds = divmod(elapsed, 60)
         print(f"\n✅ 총 학습 시간: {minutes}분 {seconds}초")
 
-    def save_and_upload_model(self, trainer):
-        trainer.save_model(self.output_dir)
+    def save_and_upload_model(self):
+        # 저장
+        self.model.save_pretrained(self.output_dir)
         self.tokenizer.save_pretrained(self.output_dir)
-        self.api.create_repo(repo_id=self.repo_id, repo_type="model", exist_ok=True, private=False)
-        self.api.upload_folder(folder_path=self.output_dir, repo_id=self.repo_id, repo_type="model")
+        # 업로드
+        api = self.api
+        api.create_repo(repo_id=self.repo_id, repo_type="model", exist_ok=True, private=False)  # 리포지토리 생성
+        api.upload_folder(
+            folder_path=self.output_dir,
+            repo_id=self.repo_id,
+            repo_type="model"
+        )
         print(f"✅ 모델 업로드 완료: https://huggingface.co/{self.repo_id}")
