@@ -10,7 +10,7 @@ from src.finetuning.qlora import QLoraTrainer
 from src.finetuning.lora import LoraTrainer
 from src.config import Config 
 
-def main(model_id: str, file_path: str, log_path: str, output_dir: str, repo_id: str, method: str):
+def main(model_id: str, file_path: str, log_path: str, output_dir: str, repo_id: str, method: str, dtype: str):
     # 선택에 따른 트레이너 인스턴스 생성
     if method == 'FullFT':
         trainer = FullFTTrainer(model_id, file_path, log_path, output_dir, repo_id, dtype)
