@@ -72,7 +72,7 @@ class QLoraTrainer:
             self.model_id,
             device_map="auto",
             quantization_config=bnb_config,
-            token=get_hf_token()
+            token=Config.get_hf_token()
         )
 
     def tokenize_dataset(self):
