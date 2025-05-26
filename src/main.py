@@ -1,3 +1,5 @@
+import configparser
+import argparse
 import os
 import logging
 from datasets import load_dataset  # 데이터셋 로딩
@@ -11,11 +13,11 @@ from src.config import Config
 def main(model_id: str, file_path: str, log_path: str, output_dir: str, repo_id: str, method: str):
     # 선택에 따른 트레이너 인스턴스 생성
     if method == 'FullFT':
-        trainer = FullFTTrainer(model_id, file_path, log_path, output_dir, repo_id)
+        trainer = FullFTTrainer(model_id, file_path, log_path, output_dir, repo_id, dtype)
     elif method == 'QLoRA':
-        trainer = QLoraTrainer(model_id, file_path, log_path, output_dir, repo_id)
+        trainer = QLoraTrainer(model_id, file_path, log_path, output_dir, repo_id, dtype)
     elif method == 'LoRA':
-        trainer = LoraTrainer(model_id, file_path, log_path, output_dir, repo_id)
+        trainer = LoraTrainer(model_id, file_path, log_path, output_dir, repo_id, dtype)
     else:
         print("Invalid method. Exiting.")
         return
@@ -31,34 +33,29 @@ def main(model_id: str, file_path: str, log_path: str, output_dir: str, repo_id:
 
     print("Fine-tuning completed successfully.")
 
-# if __name__ == "__main__":
-#     # 선택값 (can modify)
-#     selected_model = "naver-hyperclovax/HyperCLOVAX-SEED-Text-Instruct-1.5B" # 베이스 모델
-#     selected_name = "HyperCLOVAX-1.5B" # 모델 별칭 
-#     selected_method = "FullFT"  # 파인튜닝 기법 선택
-#     selected_dataset = "posts-0515.jsonl" # 사용할 데이터 타입
-#     dtype = ""
-
-#     # 기본 설정 값 (defualt)
-#     default_file_path = f"./dataset/{selected_dataset}"
-#     default_log_path = f"./log/Meow_{selected_name}-log.txt"
-#     default_output_dir = "./finetuned-ktb"
-#     default_repo_id = f"haebo/Meow-{selected_name}_{selected_method}_{dtype}"
-    
-
-#     # main 함수 호출
-#     main(selected_model, default_file_path, default_log_path, default_output_dir, default_repo_id, selected_method)
-
 if __name__ == "__main__":
-    # 허깅페이스 토큰 정의
-    hf_token = Config.get_hf_token()
+    # argparse 객체 생성
+    parser = argparse.ArgumentParser(description="Fine-tuning script")
+    parser.add_argument('--section', type=str, required=True, help='Config section to use')
 
-    # 선택값 (can modify)
-    selected_model = "Qwen/Qwen2.5-7B-Instruct"  # 베이스 모델
-    selected_name = "Qwen2.5-7B"  # 모델 별칭
-    selected_method = "LoRA"  # 파인튜닝 기법 선택
-    selected_dataset = "posts-0515.jsonl"  # 사용할 데이터 타입
-    dtype = "fp16"  # 데이터 타입에 대한 추가 정보가 필요할 경우 사용
+    # 명령줄 인자 파싱
+    args = parser.parse_args()
+
+    # configparser 객체 생성
+    config = configparser.ConfigParser()
+
+    # config.ini 파일 읽기
+    config.read('src/config.ini')
+
+    # 사용할 섹션 선택
+    section = args.section
+
+    # 변수 불러오기
+    selected_model = config[section]['selected_model']
+    selected_name = config[section]['selected_name']
+    selected_method = config[section]['selected_method']
+    selected_dataset = config[section]['selected_dataset']
+    dtype = config[section]['dtype']
 
     # 기본 설정 값 (default)
     default_file_path = f"src/dataset/{selected_dataset}"
@@ -66,5 +63,9 @@ if __name__ == "__main__":
     default_output_dir = "finetuned-ktb"
     default_repo_id = f"haebo/Meow-{selected_name}_{selected_method}_{dtype}"
 
+    print(f"repo_id : {default_repo_id}")
+
     # main 함수 호출
-    main(selected_model, default_file_path, default_log_path, default_output_dir, default_repo_id, selected_method)
+    main(selected_model, default_file_path, default_log_path, default_output_dir, default_repo_id, selected_method, dtype)
+
+    #   python3 src/main.py --section haebo/Meow-Qwen2.5-7B-LoRA-fp16

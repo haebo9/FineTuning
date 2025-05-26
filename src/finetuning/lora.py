@@ -11,7 +11,7 @@ from src.config import Config
 from src.functions import LossLoggerCallback
 
 class LoraTrainer:
-    def __init__(self, model_id, file_path, log_path, output_dir, repo_id):
+    def __init__(self, model_id, file_path, log_path, output_dir, repo_id, dtype='fp16'):
         self.model_id = model_id
         self.file_path = file_path
         self.log_path = log_path
@@ -22,6 +22,7 @@ class LoraTrainer:
         self.dataset = None
         self.tokenized_dataset = None
         self.api = HfApi()
+        self.dtype = dtype
 
     def initialize_environment(self):
         login(token=Config.get_hf_token())
@@ -85,7 +86,8 @@ class LoraTrainer:
             per_device_train_batch_size=1,
             gradient_accumulation_steps=8,
             num_train_epochs=10,
-            fp16=True,
+            fp16=(True if self.dtype == 'fp16' else False),
+            bf16=(True if self.dtype == 'bf16' else False),
             logging_steps=30,
             save_strategy="no",
             logging_strategy="steps",

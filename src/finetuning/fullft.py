@@ -10,7 +10,7 @@ from src.config import Config
 from src.functions import LossLoggerCallback  # tools.py에서 콜백 클래스 임포트
 
 class FullFTTrainer:
-    def __init__(self, model_id, file_path, log_path, output_dir, repo_id):
+    def __init__(self, model_id, file_path, log_path, output_dir, repo_id, dtype = 'fp32'):
         self.model_id = model_id
         self.file_path = file_path
         self.log_path = log_path
@@ -21,6 +21,7 @@ class FullFTTrainer:
         self.dataset = None
         self.tokenized_dataset = None
         self.api = HfApi()
+        self.dtype = dtype
 
     def initialize_environment(self):
         login(token=Config.get_hf_token())
@@ -74,7 +75,8 @@ class FullFTTrainer:
             per_device_train_batch_size=1,
             gradient_accumulation_steps=8,
             num_train_epochs=5,
-            fp16=False,
+            fp16=(True if self.dtype == 'fp16' else False),
+            bf16=(True if self.dtype == 'bf16' else False),
             logging_steps=1,
             save_strategy="epoch",
             report_to="none",
